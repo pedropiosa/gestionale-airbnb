@@ -1,9 +1,11 @@
 # Prompt maestro — Plataforma de alquiler vacacional multi-piso
 
+Proyecto: 7 apartamentos vacacionales en **Bibione** (Véneto, Italia), con posible incorporación de 4 más de un segundo propietario.
+
 Este documento contiene dos cosas:
 
-1. **El prompt** (sección 1). Cópialo tal cual y pégalo en Claude Code / Cursor / el asistente que uses.
-2. **Las decisiones abiertas y mis recomendaciones** (sección 2). Léelas antes de lanzar el prompt: hay cinco casillas que debes rellenar dentro del prompt y ahí explico qué elegiría yo y por qué.
+1. **El prompt** (sección 1). Cópialo tal cual y pégalo en Claude Code / Cursor / el asistente que uses. Las decisiones de ubicación, idiomas, aprobación, precios y stack ya están cerradas dentro del prompt; solo queda por decidir el esquema de cobro.
+2. **Las recomendaciones razonadas** (sección 2), incluida la comparativa de retención frente a cobro con devolución y el análisis de costes de alojamiento.
 
 ---
 
@@ -15,15 +17,23 @@ Este documento contiene dos cosas:
 
 ### Rol
 
-Actúas como un equipo senior de producto compuesto por: un **arquitecto de software** especializado en marketplaces de alojamiento, un **diseñador de producto UX/UI** con experiencia en e‑commerce de viaje (Airbnb, Booking, Vrbo), y un **especialista en pagos y cumplimiento normativo** para alquiler turístico en España e Italia.
+Actúas como un equipo senior de producto compuesto por: un **arquitecto de software** especializado en marketplaces de alojamiento, un **diseñador de producto UX/UI** con experiencia en e‑commerce de viaje (Airbnb, Booking, Vrbo), y un **especialista en pagos y cumplimiento normativo** para alquiler turístico en Italia (Véneto).
 
 No eres un generador de código genérico. Antes de escribir nada, razonas sobre reglas de negocio, casos límite de disponibilidad y consistencia de datos. Cuando una decisión tenga impacto en coste, cumplimiento legal o mantenibilidad, la señalas explícitamente y propones la opción por defecto que recomendarías, sin bloquear el avance.
 
 ### Objetivo
 
-Construir una **web propia de reservas directas** para un pequeño propietario que gestiona varios pisos vacacionales por temporada. La web debe permitir al huésped descubrir los pisos, ver disponibilidad real, reservar y comunicarse en su propio idioma; y al propietario, gestionar calendario, precios, solicitudes y conversaciones desde un panel único.
+Construir una **web propia de reservas directas** para apartamentos vacacionales en **Bibione** (San Michele al Tagliamento, provincia de Venecia, Véneto, Italia). La web debe permitir al huésped descubrir los pisos, ver disponibilidad real, reservar y comunicarse en su propio idioma; y al propietario, gestionar calendario, precios, solicitudes y conversaciones desde un panel único.
 
-No es un clon de Airbnb multi‑anfitrión: hay **un solo propietario** (o un equipo muy pequeño) y **N propiedades**. Optimiza para conversión directa y coste operativo bajo, no para escala de marketplace.
+### Contexto concreto (no lo generalices)
+
+- **7 apartamentos** de un propietario principal, con la posibilidad de incorporar **4 más de un segundo propietario**. El sistema debe ser **multi‑propietario desde el modelo de datos**, aunque la interfaz arranque mostrando uno solo (ver "Multi‑propietario" más abajo).
+- **Destino de playa fuertemente estacional**: la temporada va aproximadamente de mayo a septiembre, con el pico en agosto. De octubre a abril el tráfico y las reservas son casi nulos, pero **es justo cuando se reserva el verano siguiente**: la web tiene que estar viva y rápida todo el año aunque casi no se use, y el pico de agosto tiene que aguantarse sin caerse.
+- **Público real de Bibione**: alemanes y austríacos en primer lugar, luego checos, eslovacos, eslovenos y húngaros, además de italianos. Esto no es una suposición: condiciona idiomas, formas de pago y expectativas de reserva.
+- **Los pisos se siguen publicando en Airbnb**, así que la sincronización de calendarios no es opcional (ver sección 2).
+- Costumbre local que debes respetar en el motor de precios: en temporada alta el alquiler se comercializa **por semanas, de sábado a sábado**, no por noches sueltas.
+
+No es un clon de Airbnb multi‑anfitrión abierto: son **dos propietarios como mucho** y una docena de propiedades. Optimiza para conversión directa y coste operativo bajo, no para escala de marketplace.
 
 ### Usuarios y sus objetivos
 
@@ -52,9 +62,23 @@ No es un clon de Airbnb multi‑anfitrión: hay **un solo propietario** (o un eq
 
 - Modelo de **disponibilidad por noche** por propiedad. Una reserva ocupa las noches `[check_in, check_out)` — el día de salida queda libre para una entrada el mismo día.
 - **Reglas configurables por propiedad y por temporada**: estancia mínima y máxima de noches, días de entrada/salida permitidos (p. ej. solo sábados en agosto), antelación mínima de reserva (*cutoff*), ventana máxima de reserva (p. ej. 18 meses), y días de bloqueo entre reservas (limpieza).
-- **Temporadas y tarifas**: rangos de fechas con nombre (baja, media, alta, Navidad) y precio/noche. Posibilidad de sobrescribir el precio de una noche concreta. Recargos por huésped adicional a partir de N. Descuentos por estancia larga.
+- **Temporadas y tarifas** — es el corazón del sistema y debe ser **totalmente configurable por el propietario desde el panel, sin tocar código**:
+  - **Temporadas** definidas como rangos de fechas con nombre y color (bassa, media, alta, altissima / Ferragosto), creadas y editadas por el propietario. Cada propiedad puede usar el calendario de temporadas común o tener el suyo.
+  - **Dos modos de tarificación conviviendo**, seleccionables por temporada:
+    - **Por noche** (temporada baja y media): precio/noche de la temporada.
+    - **Por semana, sábado a sábado** (temporada alta): precio cerrado por semana. Es como se comercializa realmente en Bibione y el huésped alemán o checo lo espera así. En estas temporadas, el selector de fechas debe **ofrecer solo sábados** como entrada y salida.
+  - **Listino anual**: vista de tabla donde el propietario ve y edita de un vistazo el precio de cada semana del año para cada apartamento, con edición masiva por rango. Debe poder **duplicar el listino de un año al siguiente** y ajustarlo por porcentaje — es la tarea que hará cada invierno.
+  - **Sobrescritura puntual**: precio distinto para una noche o una semana concreta, que prevalece sobre la temporada.
+  - **Suplementos y extras configurables**: limpieza final, ropa de cama y toallas, cuna, mascota, plaza de garaje, aire acondicionado, llegada fuera de horario, huésped adicional a partir de N. Cada uno: obligatorio u opcional, por estancia o por persona/noche, y con IVA propio.
+  - **Descuentos**: estancia larga, reserva anticipada (*prenota prima*), última hora. Con fechas de validez.
+  - **Imposta di soggiorno**: importe por persona y noche, con exención por edad configurable y tope de noches gravadas. Se muestra por separado en el desglose y debe poder marcarse como "se paga en destino" o "se cobra online".
+  - Todos los precios en **céntimos de euro**, y todo cambio de tarifa queda registrado con autor y fecha.
+- **Simulador de precio** en el panel: el propietario introduce fechas y huéspedes y ve exactamente el mismo desglose que vería el cliente. Sirve para verificar el listino antes de publicarlo.
 - **Bloqueos manuales** con motivo (uso propio, mantenimiento, reforma).
-- **Sincronización iCal bidireccional**: exportar un `.ics` por propiedad e importar los `.ics` de Airbnb/Booking en un cron cada 15–30 min, para evitar dobles reservas si se sigue publicando en OTAs. Trata los eventos importados como bloqueos externos, marcados con su origen.
+- **Sincronización iCal bidireccional — requisito crítico, no opcional**: los pisos siguen publicados en Airbnb, así que exporta un `.ics` por propiedad e importa los `.ics` de Airbnb (y de cualquier otro portal) con un cron **cada 15 minutos**. Trata los eventos importados como bloqueos externos marcados con su origen, y no los borres nunca automáticamente sin dejar rastro.
+  - **Asume que iCal llega tarde.** Airbnb refresca los calendarios importados cada pocas horas, no en tiempo real, así que existe una ventana en la que una reserva hecha en Airbnb todavía no se ve en tu web. Es el riesgo operativo número uno del proyecto.
+  - Mitigaciones que debes implementar: **aprobación manual** en temporada alta (el propietario comprueba antes de aceptar), **aviso destacado en el panel** cuando una sincronización falle o lleve más de 1 hora sin completarse, y **alerta inmediata** si al importar se detecta un solapamiento con una reserva propia ya confirmada, con instrucciones claras de qué hacer.
+  - Registra en el panel la hora de la última sincronización correcta de cada propiedad, visible junto al calendario.
 - **Prevención de doble reserva a nivel de base de datos**, no solo de aplicación: restricción de exclusión sobre rangos de fechas (en PostgreSQL, `EXCLUDE USING gist (property_id WITH =, daterange(check_in, check_out, '[)') WITH &&)` filtrando por estados que ocupan). Esta es la invariante crítica del sistema: si todo lo demás falla, esto no puede fallar.
 - **Bloqueo temporal (*hold*)** de las fechas mientras el huésped completa el pago, con expiración automática (15 minutos) mediante un trabajo en segundo plano.
 
@@ -68,9 +92,10 @@ BORRADOR → PENDIENTE_PAGO → (PENDIENTE_APROBACION) → CONFIRMADA → EN_CUR
              EXPIRADA             RECHAZADA           CANCELADA
 ```
 
-- **Dos modos de aceptación, configurables por propiedad y por temporada**:
+- **Dos modos de aceptación, configurables por propiedad y por temporada.** **Arranca con aprobación MANUAL en todas las propiedades** — es la decisión tomada — pero el modo debe ser un simple interruptor en el panel, para poder pasar a instantánea propiedad por propiedad cuando haya confianza en el sistema, sin desplegar código.
+  - *Manual* (por defecto): la solicitud queda retenida; el propietario tiene un plazo (24 h configurable) para aceptar o rechazar. El cobro se **preautoriza pero no se captura** hasta la aceptación; si se rechaza o expira, se libera sin cargo y el huésped nunca ve un cargo seguido de una devolución.
   - *Instantánea*: el pago confirma la reserva automáticamente.
-  - *Manual*: la solicitud queda retenida; el propietario tiene un plazo (24 h configurable) para aceptar o rechazar. El cobro se **preautoriza pero no se captura** hasta la aceptación; si se rechaza o expira, se libera sin cargo.
+  - En modo manual, avisa al propietario de forma **agresiva** (email + push/WhatsApp si es posible) y muestra en el panel una cuenta atrás por solicitud. Una solicitud sin responder es una reserva perdida; el sistema debe hacerla imposible de ignorar.
 - Cada transición de estado registra actor, timestamp y motivo en un **log de auditoría** inmutable.
 - **Emails transaccionales** en el idioma del huésped en cada transición: solicitud recibida, reserva confirmada, recordatorio de pago del saldo, instrucciones de llegada (7 días antes, con dirección exacta y códigos), petición de reseña tras la salida.
 - **Cancelaciones** según política configurable (flexible / moderada / estricta) con cálculo automático del importe reembolsable y ejecución del reembolso parcial o total.
@@ -78,7 +103,8 @@ BORRADOR → PENDIENTE_PAGO → (PENDIENTE_APROBACION) → CONFIRMADA → EN_CUR
 
 #### 4. Pagos
 
-- Pasarela: **Stripe** (Payment Intents + Stripe Checkout o Elements), con métodos locales activados: tarjeta, Apple/Google Pay, Bizum si está disponible, SEPA para estancias largas.
+- Pasarela: **Stripe** (Payment Intents + Stripe Checkout), con los métodos que usa de verdad el público de Bibione: tarjeta, Apple/Google Pay, **SEPA Direct Debit**, **Sofort/Klarna y giropay para el mercado alemán y austríaco** (allí la transferencia bancaria se usa muchísimo más que la tarjeta), y transferencia SEPA manual como último recurso para estancias largas. Revisa qué métodos siguen disponibles en Stripe al implementar y activa los equivalentes vigentes.
+- **Ojo con los métodos sin preautorización**: SEPA, Klarna y similares **no permiten retener sin cobrar**. Con aprobación manual, esos métodos obligan a cobrar y devolver si se rechaza. Solución: en modo manual, ofrece **solo métodos que admitan preautorización** (tarjeta, Apple/Google Pay) y habilita el resto únicamente cuando la propiedad esté en aceptación instantánea. Documenta esta regla claramente en el código.
 - **Dos esquemas de cobro, configurables**:
   - *Pago total* en el momento de reservar.
   - *Depósito + saldo*: X % al reservar (recomendado 30 %) y el resto cobrado automáticamente N días antes de la llegada, con la tarjeta guardada como método fuera de sesión (`setup_future_usage`), avisando por email 3 días antes del cargo.
@@ -108,7 +134,7 @@ Es la pieza diferencial. Especificación:
 #### 6. Canales de contacto
 
 - **Chat interno** (el del punto 5) como canal principal para todo lo relacionado con una reserva: deja rastro, es traducible y es auditable.
-- **Botón flotante de WhatsApp** (`wa.me` con mensaje pre‑rellenado que incluye el nombre del piso y las fechas consultadas) para consultas previas rápidas. Es el canal que más convierte en España e Italia; no lo omitas. Advertencia: WhatsApp **no** pasa por la capa de traducción, así que úsalo para consultas cortas y reconduce al chat interno la conversación de la reserva.
+- **Botón flotante de WhatsApp** (`wa.me` con mensaje pre‑rellenado que incluye el nombre del piso y las fechas consultadas) para consultas previas rápidas. Es el canal dominante en Italia, Alemania, Austria y Europa central, y el que más convierte; no lo omitas. Advertencia: WhatsApp **no** pasa por la capa de traducción, así que úsalo para consultas cortas y reconduce al chat interno la conversación de la reserva.
 - **Email** de contacto visible + formulario de contacto con protección anti‑spam (honeypot + rate limiting, o Turnstile).
 - **Teléfono** opcional con horario de atención indicado.
 - Todos los canales visibles desde la ficha de piso y desde el footer, con los mismos datos en todos los idiomas.
@@ -124,6 +150,28 @@ Es la pieza diferencial. Especificación:
 - **Informes**: ingresos por propiedad y mes, tasa de ocupación, ADR, exportación CSV para la gestoría.
 - Autenticación con 2FA y roles (`propietario`, `gestor`, `limpieza` con acceso solo a calendario de entradas/salidas).
 
+#### 8. Multi‑propietario (prepararlo ahora, activarlo después)
+
+Hoy hay 7 apartamentos de un propietario. Es probable que se sumen 4 de un segundo propietario. **Construye el modelo de datos preparado para eso desde el primer día, pero no construyas la interfaz de gestión multi‑propietario hasta que haga falta.** Cambiar el modelo de datos después es caro; añadir pantallas después es barato.
+
+Qué hacer ahora:
+
+- Tabla `owners`, y **`owner_id` obligatorio en `properties`** y, por herencia, en reservas, pagos, mensajes y conversaciones.
+- **Aislamiento de datos a nivel de base de datos** con Row Level Security de Supabase: un propietario nunca puede leer ni escribir datos de otro, ni siquiera si hay un fallo en el código de la aplicación. No confíes solo en filtros en las consultas.
+- Todos los informes y listados filtran por propietario; el rol `admin` de la plataforma puede ver todo.
+- El escaparate público **no distingue propietarios**: el huésped ve una sola marca y un solo catálogo. La separación es interna.
+- Cada propietario tiene sus propios datos fiscales, su CIN por apartamento, su logotipo opcional en las facturas y sus propias plantillas de mensajes.
+
+Qué **no** hacer todavía: registro autoservicio de propietarios, panel de administración de la plataforma, facturación entre propietarios, reparto de comisiones. Eso llega solo si aparece un tercer propietario.
+
+**El dinero es la parte delicada.** Si cobras en tu cuenta el alquiler de los apartamentos de otro propietario, dejas de ser un propietario con web y pasas a ser un **intermediario**, con consecuencias fiscales serias en Italia (entre otras, la retención del 21 % sobre los alquileres cobrados por intermediarios en régimen de *cedolare secca*). Para evitarlo:
+
+- Usa **Stripe Connect con cargos directos** (*direct charges*): cada propietario conecta su propia cuenta de Stripe y el dinero de sus apartamentos va **directamente a su cuenta**, sin pasar nunca por la tuya.
+- No implementes reparto de ingresos ni cobro centralizado sin que un *commercialista* lo valide antes.
+- Mientras solo haya un propietario, una única cuenta de Stripe normal es suficiente; deja el código preparado para que la cuenta de destino sea un campo del propietario, no una constante.
+
+> Advierte explícitamente de este punto fiscal al propietario y recomiéndale consultarlo con su asesor antes de incorporar al segundo propietario. No des por buena ninguna interpretación fiscal por tu cuenta.
+
 ### Requisitos no funcionales
 
 - **Rendimiento**: LCP < 2,5 s en 4G en la ficha de piso. Imágenes optimizadas y servidas desde CDN en varios tamaños. El escaparate debe ser estático o renderizado en servidor con caché; solo el widget de disponibilidad consulta datos en vivo.
@@ -138,8 +186,15 @@ Es la pieza diferencial. Especificación:
 ### Cumplimiento legal (impórtalo desde el día uno, no lo dejes para el final)
 
 - **RGPD**: base legal por finalidad, aviso de privacidad, banner de cookies con consentimiento previo real, minimización de datos, derecho de acceso y supresión, plazos de retención, y **contrato de encargado de tratamiento con el proveedor de traducción** — estás enviando texto de un tercero a un servicio externo, y eso debe estar declarado en la política de privacidad.
-- **España**: registro obligatorio de viajeros y comunicación a las autoridades (SES.HOSPEDAJES, Real Decreto 933/2021); número de registro de vivienda turística y de la Ventanilla Única Digital de Arrendamientos visible en el anuncio; normativa autonómica de la comunidad correspondiente; tasa turística municipal si aplica.
-- **Italia**: `Codice Identificativo Nazionale` (CIN) visible en el anuncio, comunicación de huéspedes a *Alloggiati Web* (Polizia di Stato), ISTAT y `tassa di soggiorno` municipal.
+- **CIN (Codice Identificativo Nazionale)**: obligatorio y **visible en cada anuncio** — en la ficha de cada apartamento, no escondido en el pie de página. Campo por propiedad, rellenado por el propietario. Si el Véneto exige además un código regional (CIR), añade un segundo campo opcional y muéstralo junto al CIN. No inventes ni valides formatos que no conozcas con certeza.
+- **Alloggiati Web** (Polizia di Stato): comunicación obligatoria de los datos de **todos** los huéspedes dentro de las 24 h siguientes a la llegada (24 h, o el mismo día si la estancia es de una sola noche — confirma el plazo vigente). Diseña para esto:
+  - Formulario de **pre‑check‑in online** que el huésped rellena antes de llegar, con enlace enviado por email en su idioma: nombre, apellidos, fecha y lugar de nacimiento, ciudadanía, tipo y número de documento, país de expedición. Distingue *ospite singolo*, *capofamiglia*/*capogruppo* y *familiare*/*membro gruppo*, que es como Alloggiati clasifica a los huéspedes.
+  - **Genera el fichero de texto en el formato de Alloggiati Web** listo para subir, y permite descargarlo por rango de fechas. La integración automática con su servicio web es opcional y de fase posterior; el fichero descargable resuelve el 100 % del problema con una fracción del esfuerzo.
+  - **Alerta en el panel** cuando haya llegadas del día con el registro pendiente de enviar. Es una obligación con sanción; trátala como un bloqueo, no como un recordatorio suave.
+  - Estos datos son **categoría sensible**: cifrado en reposo, acceso restringido, y borrado automático pasado el plazo de conservación legal.
+- **ISTAT / Véneto**: declaración periódica del movimiento de huéspedes al portal turístico regional. Prepara la exportación de los datos agregados (llegadas, pernoctaciones, nacionalidad) en CSV; la integración directa, si llega, es de fase posterior.
+- **Imposta di soggiorno de San Michele al Tagliamento (Bibione)**: importe por persona y noche, con exenciones (menores de cierta edad, y las que fije el reglamento municipal) y tope de noches gravadas. **Todo configurable, nada escrito a fuego**, porque el ayuntamiento lo cambia. Debe aparecer separado en el desglose de precio y en el informe trimestral de liquidación.
+- **Fiscalidad**: régimen del propietario (*cedolare secca* u ordinario) configurable, facturas o recibos con numeración correlativa, y exportación para el *commercialista*. Ver también la advertencia sobre intermediación en la sección 8.
 - **Facturación**: numeración correlativa, IVA/IVA turístico según régimen, y datos fiscales del propietario en las facturas.
 - **Términos y condiciones** y política de cancelación aceptadas explícitamente (casilla no premarcada) antes de pagar, con registro de versión y timestamp del consentimiento.
 
@@ -163,6 +218,14 @@ Stack fijado (no lo cambies sin una razón de peso):
 
 Total: **cuatro cuentas externas** (Vercel, Supabase, Stripe, DeepL) más el email. Ese es el techo de complejidad operativa aceptable.
 
+**Sobre los planes gratuitos** (léelo antes de elegir plan, es un negocio real y estacional):
+
+- Los planes gratuitos de la mayoría de plataformas **están limitados a proyectos no comerciales** en sus condiciones de uso. Una web que cobra reservas es comercial. Verifica los términos vigentes de cada servicio antes de asumir que el plan gratuito sirve; no lo des por hecho.
+- Varios servicios gratuitos **suspenden el proyecto tras días de inactividad**. Con una temporada de mayo a septiembre y un invierno casi sin tráfico —justo cuando se reserva el verano—, una suspensión silenciosa en enero significa perder reservas sin enterarse. Si se usa un plan gratuito, elige uno que **reanude solo** al recibir una petición, y añade un cron de "latido" que toque la web a diario.
+- **La base de datos es lo último que hay que poner en gratuito.** Contiene reservas, pagos y datos de registro de viajeros con obligación legal de conservación. Un plan de pago barato con copias de seguridad automáticas y restauración a un punto en el tiempo vale mucho más de lo que cuesta.
+- Escribe el código **sin depender de nada exclusivo de una plataforma**: PostgreSQL estándar, `.ics` estándar, ficheros en S3‑compatible. Así, si un proveedor cambia sus precios, la migración es un fin de semana y no una reescritura.
+- Añade al `README.md` una tabla con el coste mensual real de cada servicio y qué pasa si se supera el límite del plan.
+
 Reglas de mantenibilidad que debes respetar al escribir el código:
 
 - Nombres de fichero, funciones y variables **descriptivos en inglés**, sin abreviaturas crípticas.
@@ -185,7 +248,7 @@ Reglas de mantenibilidad que debes respetar al escribir el código:
 2. Entrega un **plan por fases** antes de escribir código, con lo que incluye cada fase y qué queda fuera.
 3. Implementa por fases, dejando la aplicación funcionando y desplegable al final de cada una.
 4. **Tests** obligatorios en la lógica crítica: cálculo de precio, solapamiento de fechas, transiciones de estado de reserva, webhooks idempotentes, expiración de *holds*. Aquí no valen "tests de humo".
-5. **Seed de datos realista**: 4 pisos con fotos de ejemplo, temporadas, reservas pasadas y futuras, y una conversación multilingüe de muestra. Nada de "Lorem ipsum".
+5. **Seed de datos realista**: los 7 apartamentos con fotos de ejemplo, listino semanal de temporada alta, temporadas, reservas pasadas y futuras, y una conversación multilingüe de muestra. Nada de "Lorem ipsum".
 6. Documenta en `README.md` cómo arrancar en local, qué variables de entorno hacen falta (con `.env.example`, sin secretos reales) y cómo desplegar.
 7. Señala cualquier decisión que tenga coste recurrente (Stripe, DeepL, CDN, hosting) con una estimación mensual aproximada.
 
@@ -193,12 +256,14 @@ Reglas de mantenibilidad que debes respetar al escribir el código:
 
 | Fase | Contenido | Resultado |
 |---|---|---|
-| **0** | Arquitectura, modelo de datos, sistema de diseño, esqueleto del proyecto | Repo con base sólida y decisiones documentadas |
-| **1** | Escaparate público multi‑idioma + fichas + calendario de solo lectura + formulario de contacto + WhatsApp | Web publicable que ya capta consultas |
-| **2** | Motor de disponibilidad y precios + panel del propietario + gestión de contenido | El propietario ya gestiona todo desde dentro |
-| **3** | Reservas online + Stripe + aprobación automática/manual + emails transaccionales | Reservas directas cobrando |
-| **4** | Mensajería con traducción automática + notificaciones | El canal diferencial funcionando |
-| **5** | Sync iCal, informes, registro de viajeros, reseñas, optimización SEO y rendimiento | Operación completa |
+| **0** | Arquitectura, modelo de datos multi‑propietario, sistema de diseño, esqueleto del proyecto | Repo con base sólida y decisiones documentadas |
+| **1** | Escaparate público (it/en/de) + fichas de los 7 apartamentos + calendario de solo lectura + CIN visible + formulario de contacto + WhatsApp | Web publicable que ya capta consultas |
+| **2** | Motor de disponibilidad, temporadas y listino semanal + panel del propietario + gestión de contenido + **sync iCal con Airbnb** | El propietario gestiona todo desde dentro y no hay riesgo de doble reserva |
+| **3** | Reservas online + Stripe + aprobación manual con preautorización + emails transaccionales | Reservas directas cobrando |
+| **4** | Mensajería con traducción automática (it/en/de/sl/cs/bg) + notificaciones | El canal diferencial funcionando |
+| **5** | Pre‑check‑in y fichero de Alloggiati Web, imposta di soggiorno, informes, reseñas, SEO y rendimiento | Operación completa |
+
+**El calendario del negocio manda sobre el del proyecto.** El público alemán, austríaco y checo de Bibione reserva el verano entre enero y marzo. Eso fija la prioridad: las fases 1 a 3 tienen que estar en producción **antes de enero**, aunque sea con menos funciones de las previstas. La fase 4 puede llegar en primavera y la 5 antes de la primera llegada de mayo — salvo el registro de viajeros, que es obligatorio desde el primer huésped y, si no está listo, se cubre a mano con el portal de Alloggiati Web mientras tanto.
 
 ### Criterios de aceptación (verificables)
 
@@ -212,17 +277,23 @@ Reglas de mantenibilidad que debes respetar al escribir el código:
 - La ficha de piso pasa Lighthouse con ≥ 90 en rendimiento, accesibilidad y SEO en móvil.
 - Cambiar de idioma mantiene la página, las fechas seleccionadas y el estado del formulario.
 
-### Datos que necesito antes de empezar
+### Decisiones ya tomadas — NO las preguntes de nuevo
 
-Pregúntame estos y solo estos; para el resto, asume y avísame de lo asumido:
+- **Ubicación**: Bibione (San Michele al Tagliamento, Véneto, Italia). Aplican CIN, Alloggiati Web e imposta di soggiorno municipal. España queda fuera de alcance.
+- **Propiedades**: 7 apartamentos de un propietario, más 4 posibles de un segundo. Modelo de datos multi‑propietario desde el día 0, interfaz de un solo propietario por ahora.
+- **Idiomas**: interfaz en italiano, inglés y alemán; mensajería con traducción automática además en esloveno, checo y búlgaro. Italiano por defecto. El español no es prioritario.
+- **Aprobación**: manual en todas las propiedades al arrancar, con interruptor por propiedad para pasar a instantánea.
+- **Airbnb**: se mantiene. La sincronización iCal es crítica desde la fase 2.
+- **Precios**: configurables por temporada desde el panel, con listino semanal sábado‑a‑sábado en temporada alta.
+- **Stack**: el de la sección anterior.
 
-1. Número de pisos, ciudad(es) y país(es) donde están (determina qué normativa aplica).
-2. ¿Pago total o depósito? Si depósito: porcentaje y cuántos días antes se cobra el saldo.
-3. ¿Aceptación de reservas automática o manual? ¿Igual para todas las propiedades y temporadas?
-4. ¿Se sigue publicando en Airbnb/Booking? (determina si el sync iCal es crítico o secundario)
-5. Presupuesto mensual aceptable para servicios de terceros.
+### Lo único que debes preguntar antes de empezar
 
-Ya está decidido y **no lo preguntes**: los idiomas (interfaz en italiano, inglés y alemán; mensajería además en esloveno, checo y búlgaro; italiano por defecto; español no prioritario) y el stack técnico de la sección anterior.
+1. ¿Pago total al reservar, o depósito más saldo? Si depósito: porcentaje y cuántos días antes se cobra el resto.
+2. ¿Presupuesto mensual aceptable para servicios de terceros?
+3. Datos concretos de los 7 apartamentos (nombre, capacidad, dormitorios, CIN) — o si prefieres que arranque con datos de ejemplo y los sustituya después.
+
+Para todo lo demás, asume un valor sensato, decláralo y sigue adelante.
 
 > Fin del prompt.
 
@@ -259,17 +330,19 @@ La contrapartida a tener presente: aunque el dinero no salga, **el crédito disp
 
 Este mismo mecanismo es el que hace que la **aprobación manual** no duela: retienes al solicitar, capturas al aceptar, dejas caducar al rechazar. El huésped rechazado nunca ve un cargo seguido de una devolución en su extracto.
 
-### 2.2 ¿Aceptación automática o manual?
+### 2.2 Aceptación manual (decidido) — cómo hacer que no te cueste reservas
 
-**Recomendación: híbrido.** Automática por defecto, con reglas que fuercen la revisión manual cuando: la estancia empieza en menos de 48 h, dura más de 21 noches, el número de huéspedes es el máximo de la propiedad, o cae en fechas señaladas (Nochevieja, festivales locales).
+Empezar en manual me parece bien, y en tu caso tiene una ventaja extra que quizá no habías considerado: **compensa el retraso del iCal de Airbnb**. Airbnb no publica sus reservas en el calendario compartido al instante, así que existe una ventana de horas en la que tu web puede creer libre una semana que ya se ha vendido allí. Revisar cada solicitud a mano tapa exactamente ese agujero. Mientras sigas en Airbnb, la aprobación manual no es solo prudencia: es una red de seguridad real.
 
-La aceptación automática convierte muchísimo mejor y evita que pierdas reservas por responder tarde. El riesgo real (fiestas, huéspedes problemáticos) se concentra en unos pocos patrones que puedes detectar con reglas. Empieza en manual las primeras semanas hasta que te fíes del sistema, y pasa a automática después: el prompt ya lo deja configurable por propiedad y temporada, así que es un cambio de ajuste, no de código.
+El coste de la aprobación manual es uno solo, y es serio: **la reserva que pierdes por tardar en contestar**. Un cliente alemán que solicita un sábado por la noche y no recibe respuesta hasta el lunes ya ha reservado en otro sitio. Por eso el prompt exige aviso agresivo (email + notificación al móvil) y cuenta atrás visible por solicitud.
 
-Importante en modo manual: **preautoriza, no cobres.** Cobrar y devolver si rechazas es una mala experiencia y te cuesta comisiones.
+Mi recomendación práctica: pasa a **instantánea en temporada baja y media** en cuanto lleves un par de meses funcionando, y mantén el **manual solo en julio y agosto**, que es cuando el riesgo de solapamiento con Airbnb es máximo y cuando cada semana vale mucho dinero. El prompt lo deja configurable por propiedad y temporada, así que es un interruptor, no un desarrollo.
+
+Y no lo olvides: en modo manual, **preautoriza, no cobres** — con la salvedad de que los métodos de pago alemanes tipo SEPA o Klarna no admiten preautorización, así que en manual hay que ofrecer solo tarjeta.
 
 ### 2.3 ¿Chat interno o WhatsApp?
 
-**Los dos, con papeles distintos.** WhatsApp para la consulta previa (es el canal que la gente en España e Italia usa de verdad y el que más convierte), chat interno para todo lo que ocurre desde que hay una reserva.
+**Los dos, con papeles distintos.** WhatsApp para la consulta previa (es el canal que usan de verdad tanto italianos como alemanes, austríacos y checos, y el que más convierte), chat interno para todo lo que ocurre desde que hay una reserva.
 
 La razón para no dejarlo todo en WhatsApp es precisamente tu requisito de traducción: WhatsApp no pasa por tu capa de traducción y no deja rastro auditable ligado a la reserva. La razón para no dejarlo todo en el chat interno es que obligar a un desconocido a registrarse para preguntar "¿admite mascotas?" te cuesta consultas. Enlace mágico por email en el chat interno (sin contraseña) reduce mucho esa fricción.
 
@@ -295,7 +368,7 @@ Y sigue en pie lo de antes: declara la traducción en tu política de privacidad
 
 Te lo digo con franqueza porque es la decisión con más impacto: **lo que describes es un proyecto de varios meses**, y existen productos (Lodgify, Smoobu, Hostaway, Guesty) que traen el 80 % hecho por 30–100 €/mes.
 
-Aun así, construirlo tiene sentido en tu caso por dos razones concretas: la **mensajería con traducción bidireccional automática no la hace bien ninguno** de esos productos, y las reservas directas te ahorran el 15–20 % de comisión de las OTAs de forma permanente. Si el volumen es de 4 pisos y te importa el control, adelante.
+Aun así, construirlo tiene sentido en tu caso por dos razones concretas: la **mensajería con traducción bidireccional automática no la hace bien ninguno** de esos productos, y las reservas directas te ahorran el 15–20 % de comisión de las OTAs de forma permanente. Con 7 apartamentos en Bibione facturando en temporada, esa comisión ahorrada son miles de euros al año, no céntimos. Adelante.
 
 Mi consejo táctico: **no construyas las fases 0–5 de golpe.** Lanza la fase 1 (escaparate + WhatsApp + formulario) en dos o tres semanas y empieza a captar reservas gestionadas a mano por email. Con las primeras conversaciones reales sabrás muchísimo mejor cómo debe funcionar el motor de reservas, y habrás validado la demanda antes de escribir la parte cara.
 
@@ -308,11 +381,37 @@ El razonamiento no es que sea la tecnología más potente, sino que minimiza las
 - **Un repo, un despliegue.** Web y API viven juntas. No hay dos proyectos que sincronizar ni dos despliegues que puedan quedarse descompasados.
 - **Supabase te da tres cosas en una cuenta**: base de datos PostgreSQL de verdad (que necesitas para la restricción anti‑doble‑reserva), login y almacenamiento de fotos. La alternativa sería montar tres servicios distintos.
 - **Vercel despliega solo** en cada push a GitHub, y cada rama genera una URL de vista previa donde puedes ver un cambio antes de publicarlo. Para trabajar conmigo esto vale mucho: te enseño un enlace, tú lo miras en el móvil, decides.
-- **He quitado Redis y la cola de trabajos** que llevaba la versión anterior del prompt. A cuatro pisos no aportan nada y son dos cosas más que pueden caerse. Las tareas periódicas van con Vercel Cron, que es una línea de configuración.
+- **He quitado Redis y la cola de trabajos** que llevaba la versión anterior del prompt. A once apartamentos no aportan nada y son dos cosas más que pueden caerse. Las tareas periódicas van con Vercel Cron, que es una línea de configuración.
 
-Quedan **cuatro cuentas externas**: Vercel, Supabase, Stripe y DeepL. Ese es el techo que yo no pasaría. En plan gratuito o básico, hasta que haya volumen real, el coste ronda los 25–45 €/mes.
+Quedan **cuatro cuentas externas**: Vercel, Supabase, Stripe y DeepL. Ese es el techo que yo no pasaría.
 
 Sobre TypeScript: añade algo de verbosidad, pero detecta errores antes de que lleguen a producción y —esto importa para nuestro caso— hace que un asistente de IA se equivoque bastante menos al modificar código que no escribió. Merece la pena.
+
+### 2.7 ¿Hay alojamiento y base de datos gratis para siempre?
+
+Respuesta corta: **existe, pero no deberías usarlo para esto**, y quiero explicarte por qué antes de que lo decidas.
+
+Hay tres trampas concretas en los planes gratuitos, y las tres te tocan de lleno:
+
+**1. Casi todos prohíben el uso comercial.** Los planes gratuitos de las plataformas de despliegue suelen estar limitados en sus condiciones a proyectos personales y no comerciales. Una web que cobra reservas es comercial sin discusión. No es que te vayan a cerrar la cuenta mañana, pero estarías construyendo el negocio sobre un incumplimiento de contrato que pueden hacer valer justo cuando más lo necesitas — en agosto.
+
+**2. Suspenden el proyecto por inactividad, y tu invierno es inactivo.** Varios servicios gratuitos de base de datos pausan el proyecto tras unos días sin peticiones. Tu web tiene tráfico casi nulo de noviembre a febrero… que es exactamente cuando los alemanes reservan el verano. Una base de datos pausada en enero significa una web caída en el mes que más importa, y sin nadie mirando. Se puede parchear con un cron que "toque" la web a diario, pero estás poniendo una tirita sobre algo que no debería sangrar.
+
+**3. Sin copias de seguridad decentes.** Tu base de datos contendrá reservas cobradas y datos de documentos de identidad con obligación legal de conservación. Los planes gratuitos rara vez incluyen restauración a un punto en el tiempo. Perder eso no es un problema técnico, es un problema legal y de dinero.
+
+**Los números, para que decidas con ellos delante.** El coste realista de hacerlo bien está en torno a **40–60 €/mes** (despliegue, base de datos con copias, traducción, email y dominio), más las comisiones de Stripe, que son proporcionales a lo que ingresas. Aproximadamente **600 €/año**. Una sola semana de agosto en un apartamento de Bibione ronda o supera esa cifra. Y solo con **una** reserva directa de 1.000 € que antes habría ido por Airbnb ya te has ahorrado unos 150 € de comisión.
+
+Dicho de otro modo: ahorrarte 40 €/mes te expone a perder una semana de agosto entera por una caída silenciosa. Es de las peores relaciones riesgo/beneficio que conozco.
+
+**Lo que sí haría gratis:**
+
+- **Todo el desarrollo**, hasta que la web se publique de verdad. Mientras no cobre reservas no es comercial y no hay ningún problema en usar planes gratuitos. Eso son meses sin pagar nada.
+- **Vistas previas de ramas** para que revises cambios antes de publicarlos.
+- Herramientas de apoyo: repositorio en GitHub, monitorización básica, analítica.
+
+**Y una condición que sí te ahorra dinero de verdad a largo plazo**, que ya he metido en el prompt: que el código **no dependa de nada exclusivo de un proveedor**. PostgreSQL estándar, ficheros `.ics` estándar, almacenamiento compatible con S3. Si dentro de dos años Vercel o Supabase suben precios, migrar a un servidor propio de 5 €/mes en Hetzner es un fin de semana de trabajo en vez de una reescritura. Esa es la protección real contra los costes: poder irte, no empezar gratis.
+
+Un aviso final sobre estas cifras: los planes y límites de estos servicios cambian a menudo, y mi información tiene fecha de caducidad. Antes de contratar nada, comprueba los precios y las condiciones vigentes en cada web. Lo que no cambia es el razonamiento: no pongas el negocio de la temporada en una infraestructura que puede pausarse sin avisarte.
 
 ---
 
