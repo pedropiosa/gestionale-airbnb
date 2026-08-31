@@ -29,7 +29,13 @@ Construir una **web propia de reservas directas** para apartamentos vacacionales
 
 - **7 apartamentos** de un propietario principal, con la posibilidad de incorporar **4 más de un segundo propietario**. El sistema debe ser **multi‑propietario desde el modelo de datos**, aunque la interfaz arranque mostrando uno solo (ver "Multi‑propietario" más abajo).
 - **Destino de playa fuertemente estacional**: la temporada va aproximadamente de mayo a septiembre, con el pico en agosto. De octubre a abril el tráfico y las reservas son casi nulos, pero **es justo cuando se reserva el verano siguiente**: la web tiene que estar viva y rápida todo el año aunque casi no se use, y el pico de agosto tiene que aguantarse sin caerse.
-- **Público real de Bibione**: alemanes y austríacos en primer lugar, luego checos, eslovacos, eslovenos y húngaros, además de italianos. Esto no es una suposición: condiciona idiomas, formas de pago y expectativas de reserva.
+- **Público real, medido sobre 220 reservas y 861 huéspedes registrados en 2025–2026** (formularios de Croce del Sud y Via del Mare; no incluye Andromeda):
+  - Por reserva, según la nacionalidad del titular: **Alemania 42,7 %, Italia 16,4 %, Austria 10,5 %, Chequia 7,3 %, Hungría 5,0 %, Polonia 3,6 %, Eslovaquia 3,6 %, Suiza 2,3 %, Rumanía 1,8 %**. Eslovenia, apenas un 0,9 %.
+  - **El bloque germanófono (Alemania + Austria + Suiza) es el 55 % de las reservas.** El alemán no es el segundo idioma: es el primero en volumen real.
+  - El bloque de Europa central (Chequia, Eslovaquia, Hungría, Polonia) suma un 19,5 %.
+  - **El 75 % de las llegadas son en sábado y la estancia mediana es de 7 noches** — el formato semanal sábado a sábado no es una costumbre local que respetar, es lo que ya hace tres de cada cuatro clientes.
+  - **Grupos familiares**: media de 3,9 personas por reserva, un 16 % son grupos de 6 o más, y en torno al 25 % de los huéspedes son menores de 12 años. Diseña pensando en familias, no en parejas.
+  - Un 13 % de las reservas mezclan nacionalidades dentro del mismo grupo: el idioma se decide por huésped, no por reserva.
 - **Los pisos se siguen publicando en Airbnb**, así que la sincronización de calendarios no es opcional (ver sección 2).
 - Costumbre local que debes respetar en el motor de precios: en temporada alta el alquiler se comercializa **por semanas, de sábado a sábado**, no por noches sueltas.
 
@@ -424,25 +430,34 @@ Un aviso final sobre estas cifras: los planes y límites de estos servicios camb
 
 ---
 
-## 4. Lista para discutir con los propietarios
+## 4. Lista per la riunione con i proprietari
 
-Puntos abiertos que deben cerrarse **antes** de empezar a construir. Cada uno lleva mi recomendación.
+Punti aperti da chiudere **prima** di iniziare a costruire. Ogni voce porta la mia raccomandazione.
 
-| # | Tema | Recomendación |
+| # | Tema | Raccomandazione |
 |---|---|---|
-| 1 | **Idiomas de la web** (3 + un cuarto posible) | Italiano, inglés y alemán. El cuarto: polaco o checo, según volumen real. |
-| 2 | **Idiomas de la mensajería** | Italiano, inglés, alemán, polaco, checo, eslovaco y húngaro. Todos latinos y cubiertos por DeepL. Ampliable con una fila en la base de datos; la lista definitiva puede esperar. |
-| 3 | **Política de cobro de la reserva** | Depósito 30 % + saldo 14 días antes. Cobro solo al aceptar la solicitud, no antes. |
-| 4 | **Fianza por daños** — cuatro opciones | **(a) Ninguna**, mi recomendación. **(b) Tarjeta guardada en garantía**: cómoda, pero el cliente puede disputar el cargo y en daños suele ganar. **(c) Metálico a la llegada**: la única sin riesgo de disputa, pero da trabajo y no deja rastro. **(d) Retención de tarjeta**: caduca a los 7 días, antes de acabar la semana. |
-| 5 | **Cuenta de cobro** | Stripe Connect con cargos directos: cada propietario cobra en su cuenta. |
-| 6 | **Primeras reservas (antes de la web)** | Email para lo formal, WhatsApp para lo rápido. Guardar todo en un sitio. |
-| 7 | **Canal de mensajería definitivo** | WhatsApp antes de reservar; chat web con traductor una vez confirmada. |
-| 8 | **¿Se reabre Airbnb en febrero?** | Sí, pero **como canal residual**: la web es la fuente de verdad y en febrero se abre en Airbnb solo lo que siga libre. Nunca los dos canales vendiendo el mismo inventario a la vez. |
-| 9 | **Política de cancelación** | Una sola política, clara, igual para todos los apartamentos. |
-| 10 | **Estancia mínima y día de entrada por temporada** | Semana sábado‑sábado en julio y agosto; libre el resto. |
-| 11 | **Plazo de respuesta a las solicitudes** | Máximo 24 h, idealmente 12. Definir quién responde. |
-| 12 | **Listino de precios de la próxima temporada** | Necesario antes de abrir reservas. |
-| 13 | **Imposta di soggiorno** | ¿Se cobra online o en destino? |
-| 14 | **Datos de cada apartamento** | CIN, capacidad, dormitorios, fotos, descripción. |
-| 15 | **Si falla el cobro del saldo** | Reintento automático y enlace de pago por email o WhatsApp. Como último recurso, enlace de pago desde el móvil del cliente al llegar — antes que un TPV físico, que obliga al propietario a desplazarse. |
-| 16 | **Quién revisa el calendario antes de aceptar en Airbnb** | Procedimiento escrito y una sola persona responsable en temporada alta. |
+| 1 | **Lingue del sito** | Italiano, inglese e tedesco. Il tedesco copre il 55 % delle prenotazioni reali: va trattato come lingua principale, non secondaria. Quarta lingua eventuale: **ceco**. |
+| 2 | **Lingue della messaggistica** | Italiano, inglese, tedesco, **ceco** (che copre anche gli slovacchi), ungherese e polacco. **Lo sloveno si può togliere**: è lo 0,9 % delle prenotazioni. Da valutare il rumeno, in crescita nel 2026. |
+| 3 | **Politica di incasso** | Acconto del 30 % + saldo 14 giorni prima dell'arrivo. Incasso **solo al momento dell'accettazione**, mai prima. |
+| 4 | **Cauzione danni** — quattro opzioni | **(a) Nessuna**, la mia raccomandazione. **(b) Carta salvata in garanzia**: comoda, ma il cliente può contestare l'addebito e nei danni di solito vince. **(c) Contanti all'arrivo**: l'unica senza rischio di contestazione, ma richiede presenza fisica. **(d) Blocco sulla carta**: scade dopo 7 giorni. Se si sceglie il blocco, crearlo **2–3 giorni prima della partenza**, non prima dell'arrivo. |
+| 5 | **Conto di incasso** | Stripe Connect con addebiti diretti: ogni proprietario incassa sul proprio conto. |
+| 6 | **Prime prenotazioni (prima del sito)** | Email per la parte formale, WhatsApp per il resto. Tenere traccia di tutto in un unico posto. |
+| 7 | **Canale di messaggistica definitivo** | WhatsApp prima della prenotazione, chat del sito con traduttore dopo la conferma. |
+| 8 | **Airbnb come canale residuo** | Il sito è la fonte di verità. A febbraio si apre su Airbnb **solo ciò che è ancora libero**. Mai i due canali sullo stesso inventario. |
+| 9 | **Chi controlla il calendario prima di accettare su Airbnb** | Procedura scritta e **una sola persona responsabile** in alta stagione. |
+| 10 | **Le persone già interessate per il 2027** | Non farle aspettare il sito. Aprire subito una lista d'attesa con nome, appartamento, settimana e lingua, e confermare a mano con acconto tramite link di pagamento. Sono le prime prenotazioni dirette e il miglior test del processo. |
+| 11 | **Politica di cancellazione** | Una sola politica, chiara, uguale per tutti gli appartamenti. |
+| 12 | **Soggiorno minimo e giorno di arrivo** | Settimana sabato‑sabato a luglio e agosto (già il 75 % delle prenotazioni). Libero nel resto della stagione, dove i soggiorni brevi di 3–4 notti sono frequenti. |
+| 13 | **Tempo di risposta alle richieste** | Massimo 24 ore, meglio 12. Definire chi risponde. |
+| 14 | **Se fallisce l'incasso del saldo** | Nuovo tentativo automatico e link di pagamento via email o WhatsApp. Come ultima risorsa, link di pagamento dal telefono del cliente all'arrivo — meglio di un POS fisico, che obbliga il proprietario a spostarsi. |
+| 15 | **Listino della prossima stagione** | Necessario prima di aprire le prenotazioni. |
+| 16 | **Imposta di soggiorno** | Si incassa online o in loco? |
+| 17 | **Dati di ogni appartamento** | CIN, capienza, camere, foto, descrizione. |
+| 18 | **Un marchio o tre?** | Oggi ci sono tre nomi: Croce del Sud, Via del Mare, Andromeda. Decidere se il sito è un marchio unico con tre residenze o tre identità separate. Consiglio: **un marchio unico**, molto più semplice da posizionare su Google. |
+| 19 | **Dominio e account** | Chi intesta dominio, Stripe, Google e hosting. Vanno intestati alla proprietà, non a una persona di passaggio. |
+| 20 | **Profilo Google e recensioni** | Aprire una scheda Google Business per struttura e chiedere la recensione via email dopo la partenza, nella lingua del cliente. È il canale gratuito con più impatto sulle prenotazioni dirette. |
+| 21 | **Chi scrive i testi e le traduzioni** | Le descrizioni in tedesco e inglese vanno scritte o riviste da un umano, non tradotte a macchina. |
+
+### Nota sui dati
+
+L'analisi delle nazionalità è calcolata su **220 prenotazioni e 861 ospiti** dei moduli Jotform di Croce del Sud e Via del Mare (2025 e 2026). Non include Andromeda 2026 e la stagione 2026 non è ancora completa. Sono ospiti effettivamente arrivati: non dicono nulla su chi ha chiesto e non ha prenotato.
