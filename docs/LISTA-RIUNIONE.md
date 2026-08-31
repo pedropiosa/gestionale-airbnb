@@ -10,7 +10,7 @@ Documenti collegati: [analisi dei clienti](ANALISI-CLIENTI.md) · [prompt maestr
 | 2 | **Lingue della messaggistica** | Italiano, inglese, tedesco, **ceco** (che copre anche gli slovacchi), ungherese e polacco. **Lo sloveno si può togliere**: è lo 0,9 % delle prenotazioni. Da valutare il rumeno, in crescita nel 2026. |
 | 3 | **Politica di incasso** | Acconto del 30 % + saldo 14 giorni prima dell'arrivo. Incasso **solo al momento dell'accettazione**, mai prima. |
 | 4 | **Cauzione danni** — quattro opzioni | **(a) Nessuna**, la mia raccomandazione. **(b) Carta salvata in garanzia**: comoda, ma il cliente può contestare l'addebito e nei danni di solito vince. **(c) Contanti all'arrivo**: l'unica senza rischio di contestazione, ma richiede presenza fisica. **(d) Blocco sulla carta**: scade dopo 7 giorni. Se si sceglie il blocco, crearlo **2–3 giorni prima della partenza**, non prima dell'arrivo. |
-| 5 | **Conto di incasso** | Stripe Connect con addebiti diretti: ogni proprietario incassa sul proprio conto. |
+| 5 | **Conto di incasso** — ✅ deciso | Stripe Connect con addebiti diretti: ogni proprietario incassa sul **proprio conto**. La piattaforma non trattiene denaro di nessuno. Eventuali accordi di intermediazione si pattuiscono a parte, fuori dal sistema. |
 | 6 | **Prime prenotazioni (prima del sito)** | Email per la parte formale, WhatsApp per il resto. Tenere traccia di tutto in un unico posto. |
 | 7 | **Canale di messaggistica definitivo** | WhatsApp prima della prenotazione, chat del sito con traduttore dopo la conferma. |
 | 8 | **Airbnb come canale residuo** | Il sito è la fonte di verità. A febbraio si apre su Airbnb **solo ciò che è ancora libero**. Mai i due canali sullo stesso inventario. |
@@ -24,6 +24,7 @@ Documenti collegati: [analisi dei clienti](ANALISI-CLIENTI.md) · [prompt maestr
 | 16 | **Imposta di soggiorno** | Si incassa online o in loco? |
 | 17 | **Dati di ogni appartamento** | CIN, capienza, camere, foto, descrizione. |
 | 18 | **Un marchio o tre?** | Oggi ci sono tre nomi: Croce del Sud, Via del Mare, Andromeda. Decidere se il sito è un marchio unico con tre residenze o tre identità separate. Consiglio: **un marchio unico**, molto più semplice da posizionare su Google. |
+| 18b | **Ripartizione degli appartamenti** — ✅ deciso | Due proprietari dal primo giorno: 5 appartamenti uno, 2 l'altro. Il sistema è multiproprietario in produzione fin dal lancio, con isolamento dei dati. Ogni proprietario vede solo i propri. |
 | 19 | **Dominio e account** | Chi intesta dominio, Stripe, Google e hosting. Vanno intestati alla proprietà, non a una persona di passaggio. |
 | 20 | **Profilo Google e recensioni** | Aprire una scheda Google Business per struttura e chiedere la recensione via email dopo la partenza, nella lingua del cliente. È il canale gratuito con più impatto sulle prenotazioni dirette. |
 | 21 | **Chi scrive i testi e le traduzioni** | Le descrizioni in tedesco e inglese vanno scritte o riviste da un umano, non tradotte a macchina. |

@@ -27,7 +27,7 @@ Construir una **web propia de reservas directas** para apartamentos vacacionales
 
 ### Contexto concreto (no lo generalices)
 
-- **7 apartamentos** de un propietario principal, con la posibilidad de incorporar **4 más de un segundo propietario**. El sistema debe ser **multi‑propietario desde el modelo de datos**, aunque la interfaz arranque mostrando uno solo (ver "Multi‑propietario" más abajo).
+- **7 apartamentos repartidos entre DOS propietarios desde el primer día**: 5 de uno y 2 del otro. Posible incorporación posterior de 4 más de un tercero. Esto **no** es un escenario futuro que preparar: el sistema es multi‑propietario en producción desde el lanzamiento (ver sección 8).
 - **Destino de playa fuertemente estacional**: la temporada va aproximadamente de mayo a septiembre, con el pico en agosto. De octubre a abril el tráfico y las reservas son casi nulos, pero **es justo cuando se reserva el verano siguiente**: la web tiene que estar viva y rápida todo el año aunque casi no se use, y el pico de agosto tiene que aguantarse sin caerse.
 - **Público real, medido sobre 220 reservas y 861 huéspedes registrados en 2025–2026** (formularios de Croce del Sud y Via del Mare; no incluye Andromeda):
   - Por reserva, según la nacionalidad del titular: **Alemania 42,7 %, Italia 16,4 %, Austria 10,5 %, Chequia 7,3 %, Hungría 5,0 %, Polonia 3,6 %, Eslovaquia 3,6 %, Suiza 2,3 %, Rumanía 1,8 %**. Eslovenia, apenas un 0,9 %.
@@ -39,7 +39,7 @@ Construir una **web propia de reservas directas** para apartamentos vacacionales
 - **Los pisos se siguen publicando en Airbnb**, así que la sincronización de calendarios no es opcional (ver sección 2).
 - Costumbre local que debes respetar en el motor de precios: en temporada alta el alquiler se comercializa **por semanas, de sábado a sábado**, no por noches sueltas.
 
-No es un clon de Airbnb multi‑anfitrión abierto: son **dos propietarios como mucho** y una docena de propiedades. Optimiza para conversión directa y coste operativo bajo, no para escala de marketplace.
+No es un clon de Airbnb multi‑anfitrión abierto: son dos o tres propietarios conocidos y una docena de propiedades. Optimiza para conversión directa y coste operativo bajo, no para escala de marketplace.
 
 ### Usuarios y sus objetivos
 
@@ -156,27 +156,31 @@ Es la pieza diferencial. Especificación:
 - **Informes**: ingresos por propiedad y mes, tasa de ocupación, ADR, exportación CSV para la gestoría.
 - Autenticación con 2FA y roles (`propietario`, `gestor`, `limpieza` con acceso solo a calendario de entradas/salidas).
 
-#### 8. Multi‑propietario (prepararlo ahora, activarlo después)
+#### 8. Multi‑propietario (activo desde el día 0)
 
-Hoy hay 7 apartamentos de un propietario. Es probable que se sumen 4 de un segundo propietario. **Construye el modelo de datos preparado para eso desde el primer día, pero no construyas la interfaz de gestión multi‑propietario hasta que haga falta.** Cambiar el modelo de datos después es caro; añadir pantallas después es barato.
+Hay **dos propietarios reales desde el lanzamiento**: uno con 5 apartamentos y otro con 2. Puede sumarse un tercero con 4. Esto deja de ser una previsión y pasa a ser un requisito funcional de la primera versión.
 
-Qué hacer ahora:
+Qué debe estar operativo desde el principio:
 
 - Tabla `owners`, y **`owner_id` obligatorio en `properties`** y, por herencia, en reservas, pagos, mensajes y conversaciones.
 - **Aislamiento de datos a nivel de base de datos** con Row Level Security de Supabase: un propietario nunca puede leer ni escribir datos de otro, ni siquiera si hay un fallo en el código de la aplicación. No confíes solo en filtros en las consultas.
 - Todos los informes y listados filtran por propietario; el rol `admin` de la plataforma puede ver todo.
 - El escaparate público **no distingue propietarios**: el huésped ve una sola marca y un solo catálogo. La separación es interna.
-- Cada propietario tiene sus propios datos fiscales, su CIN por apartamento, su logotipo opcional en las facturas y sus propias plantillas de mensajes.
+- Cada propietario tiene sus propios datos fiscales, su CIN por apartamento y sus propias plantillas de mensajes.
+- **Cada propietario cobra en su propia cuenta de Stripe.** Decisión tomada: ver el bloque de dinero más abajo.
+- El panel muestra a cada propietario **solo sus apartamentos, sus reservas, sus mensajes y sus ingresos**. Un rol `admin` puede verlo todo.
+- Los informes y las exportaciones para la gestoría se generan **por propietario**, nunca agregados.
 
-Qué **no** hacer todavía: registro autoservicio de propietarios, panel de administración de la plataforma, facturación entre propietarios, reparto de comisiones. Eso llega solo si aparece un tercer propietario.
+Qué **no** hacer todavía: registro autoservicio de propietarios, marketplace abierto, facturación entre propietarios, reparto de comisiones. Solo si el modelo de negocio cambia.
 
-**El dinero es la parte delicada.** Si cobras en tu cuenta el alquiler de los apartamentos de otro propietario, dejas de ser un propietario con web y pasas a ser un **intermediario**, con consecuencias fiscales serias en Italia (entre otras, la retención del 21 % sobre los alquileres cobrados por intermediarios en régimen de *cedolare secca*). Para evitarlo:
+**El dinero — decisión tomada.** Cada propietario cobra los alquileres **en su propia cuenta bancaria**. Implementación obligatoria:
 
-- Usa **Stripe Connect con cargos directos** (*direct charges*): cada propietario conecta su propia cuenta de Stripe y el dinero de sus apartamentos va **directamente a su cuenta**, sin pasar nunca por la tuya.
-- No implementes reparto de ingresos ni cobro centralizado sin que un *commercialista* lo valide antes.
-- Mientras solo haya un propietario, una única cuenta de Stripe normal es suficiente; deja el código preparado para que la cuenta de destino sea un campo del propietario, no una constante.
+- **Stripe Connect con cargos directos** (*direct charges*). Cada propietario conecta su propia cuenta de Stripe y el dinero de sus apartamentos va **directamente a esa cuenta, sin pasar nunca por la de la plataforma**. La cuenta de destino es un campo del propietario, nunca una constante.
+- Esto mantiene a la plataforma **fuera de la figura de intermediario**, que en Italia arrastra obligaciones fiscales serias (entre otras, la retención del 21 % sobre alquileres cobrados por intermediarios en régimen de *cedolare secca*).
+- **No implementes reparto de ingresos, comisiones ni cobro centralizado.** Si en algún momento hiciera falta, se acuerda aparte entre los propietarios y se valida con un *commercialista* antes de tocar el código.
+- Cada propietario ve y descarga **solo sus propios movimientos y facturas**.
 
-> Advierte explícitamente de este punto fiscal al propietario y recomiéndale consultarlo con su asesor antes de incorporar al segundo propietario. No des por buena ninguna interpretación fiscal por tu cuenta.
+> Los reembolsos, las disputas y los cobros fallidos se resuelven **contra la cuenta del propietario correspondiente**, no contra un fondo común. Tenlo en cuenta al diseñar el modelo de pagos.
 
 ### Requisitos no funcionales
 
@@ -224,7 +228,7 @@ Stack fijado (no lo cambies sin una razón de peso):
 
 Total: **cuatro cuentas externas** (Vercel, Supabase, Stripe, DeepL) más el email. Ese es el techo de complejidad operativa aceptable.
 
-**Sobre los planes gratuitos** (léelo antes de elegir plan, es un negocio real y estacional):
+**Sobre los planes gratuitos.** Decisión tomada: **se pagarán los planes necesarios**, así que usa planes de pago con copias de seguridad desde el lanzamiento. Lo que sigue explica por qué, y sigue valiendo para el periodo de desarrollo:
 
 - Los planes gratuitos de la mayoría de plataformas **están limitados a proyectos no comerciales** en sus condiciones de uso. Una web que cobra reservas es comercial. Verifica los términos vigentes de cada servicio antes de asumir que el plan gratuito sirve; no lo des por hecho.
 - Varios servicios gratuitos **suspenden el proyecto tras días de inactividad**. Con una temporada de mayo a septiembre y un invierno casi sin tráfico —justo cuando se reserva el verano—, una suspensión silenciosa en enero significa perder reservas sin enterarse. Si se usa un plan gratuito, elige uno que **reanude solo** al recibir una petición, y añade un cron de "latido" que toque la web a diario.
@@ -265,7 +269,7 @@ Reglas de mantenibilidad que debes respetar al escribir el código:
 | **0** | Arquitectura, modelo de datos multi‑propietario, sistema de diseño, esqueleto del proyecto | Repo con base sólida y decisiones documentadas |
 | **1** | Escaparate público (it/en/de) + fichas de los 7 apartamentos + calendario de solo lectura + CIN visible + formulario de contacto + WhatsApp | Web publicable que ya capta consultas |
 | **2** | Motor de disponibilidad, temporadas y listino semanal + panel del propietario + gestión de contenido + **sync iCal con Airbnb** | El propietario gestiona todo desde dentro y no hay riesgo de doble reserva |
-| **3** | Reservas online + Stripe + aprobación manual con preautorización + emails transaccionales | Reservas directas cobrando |
+| **3** | Reservas online + **Stripe Connect (una cuenta por propietario)** + aprobación manual + emails transaccionales | Reservas directas cobrando, cada una en su cuenta |
 | **4** | Mensajería con traducción automática (it/en/de/sl/cs/bg) + notificaciones | El canal diferencial funcionando |
 | **5** | Pre‑check‑in y fichero de Alloggiati Web, imposta di soggiorno, informes, reseñas, SEO y rendimiento | Operación completa |
 
@@ -286,7 +290,9 @@ Reglas de mantenibilidad que debes respetar al escribir el código:
 ### Decisiones ya tomadas — NO las preguntes de nuevo
 
 - **Ubicación**: Bibione (San Michele al Tagliamento, Véneto, Italia). Aplican CIN, Alloggiati Web e imposta di soggiorno municipal. España queda fuera de alcance.
-- **Propiedades**: 7 apartamentos de un propietario, más 4 posibles de un segundo. Modelo de datos multi‑propietario desde el día 0, interfaz de un solo propietario por ahora.
+- **Propiedades**: 7 apartamentos de **dos propietarios** (5 + 2), posible tercero con 4. Multi‑propietario real y operativo desde la primera versión, con aislamiento de datos por propietario.
+- **Cobros**: cada propietario cobra en su propia cuenta mediante Stripe Connect con cargos directos. La plataforma no retiene dinero de nadie. Cualquier acuerdo de intermediación se pacta aparte, fuera del sistema.
+- **Presupuesto**: se pagarán los servicios necesarios. No optimices por coste a costa de la fiabilidad; usa planes de pago con copias de seguridad.
 - **Idiomas**: interfaz en italiano, inglés y alemán, con arquitectura preparada para un cuarto sin rehacer nada; mensajería con traducción automática además en polaco, checo, eslovaco y húngaro (provisional). Italiano por defecto. El español no es prioritario.
 - **Aprobación**: manual en todas las propiedades al arrancar, con interruptor por propiedad para pasar a instantánea.
 - **Airbnb**: se mantiene. La sincronización iCal es crítica desde la fase 2.
@@ -296,8 +302,7 @@ Reglas de mantenibilidad que debes respetar al escribir el código:
 ### Lo único que debes preguntar antes de empezar
 
 1. ¿Pago total al reservar, o depósito más saldo? Si depósito: porcentaje y cuántos días antes se cobra el resto.
-2. ¿Presupuesto mensual aceptable para servicios de terceros?
-3. Datos concretos de los 7 apartamentos (nombre, capacidad, dormitorios, CIN) — o si prefieres que arranque con datos de ejemplo y los sustituya después.
+2. Datos concretos de los 7 apartamentos (nombre, propietario, capacidad, dormitorios, CIN) — o si prefieres que arranque con datos de ejemplo y los sustituya después.
 
 Para todo lo demás, asume un valor sensato, decláralo y sigue adelante.
 
