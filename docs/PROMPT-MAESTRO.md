@@ -1,6 +1,6 @@
 # Prompt maestro — Plataforma de alquiler vacacional multi-piso
 
-Proyecto: 7 apartamentos vacacionales en **Bibione** (Véneto, Italia), con posible incorporación de 4 más de un segundo propietario.
+Proyecto: 7 apartamentos vacacionales en **Bibione** (Véneto, Italia), de **dos propietarios** (5 + 2), con posible incorporación de 4 más de un tercero.
 
 Este documento contiene dos cosas:
 
