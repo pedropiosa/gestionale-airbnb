@@ -421,3 +421,26 @@ Un aviso final sobre estas cifras: los planes y límites de estos servicios camb
 2. Pega el prompt completo en una sesión nueva del asistente.
 3. Pídele primero **solo la fase 0** y revisa el modelo de datos y las decisiones antes de dejarle escribir la aplicación entera. El modelo de datos de disponibilidad y precios es lo que más caro sale de cambiar después.
 4. Al empezar cada fase, vuelve a pegar el prompt como contexto y añade "implementa la fase N".
+
+---
+
+## 4. Lista para discutir con los propietarios
+
+Puntos abiertos que deben cerrarse **antes** de empezar a construir. Cada uno lleva mi recomendación.
+
+| # | Tema | Recomendación |
+|---|---|---|
+| 1 | **Idiomas de la web** (3 + un cuarto posible) | Italiano, inglés y alemán. El cuarto: polaco o checo, según volumen real. |
+| 2 | **Idiomas de la mensajería** | Inglés, alemán, polaco, checo, esloveno + italiano. Ampliable sin coste; decidir la lista definitiva puede esperar. |
+| 3 | **Política de cobro de la reserva** | Depósito 30 % + saldo 14 días antes. Cobro solo al aceptar la solicitud, no antes. |
+| 4 | **Fianza por daños** | No ponerla. Si se pone: tarjeta guardada en garantía, no retención ni cobro. |
+| 5 | **Cuenta de cobro** | Stripe Connect con cargos directos: cada propietario cobra en su cuenta. |
+| 6 | **Primeras reservas (antes de la web)** | Email para lo formal, WhatsApp para lo rápido. Guardar todo en un sitio. |
+| 7 | **Canal de mensajería definitivo** | WhatsApp antes de reservar; chat web con traductor una vez confirmada. |
+| 8 | **¿Se reabre Airbnb en febrero?** | Decidirlo en enero con datos de la web. Mientras esté cerrado, no hay riesgo de doble reserva. |
+| 9 | **Política de cancelación** | Una sola política, clara, igual para todos los apartamentos. |
+| 10 | **Estancia mínima y día de entrada por temporada** | Semana sábado‑sábado en julio y agosto; libre el resto. |
+| 11 | **Plazo de respuesta a las solicitudes** | Máximo 24 h, idealmente 12. Definir quién responde. |
+| 12 | **Listino de precios de la próxima temporada** | Necesario antes de abrir reservas. |
+| 13 | **Imposta di soggiorno** | ¿Se cobra online o en destino? |
+| 14 | **Datos de cada apartamento** | CIN, capacidad, dormitorios, fotos, descripción. |
