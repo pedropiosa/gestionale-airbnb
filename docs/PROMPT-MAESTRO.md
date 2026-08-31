@@ -54,7 +54,7 @@ No es un clon de Airbnb multi‑anfitrión abierto: son **dos propietarios como 
 - Página **"La zona"** (contenido SEO local: playas, restaurantes, cómo llegar) y página de **contacto**.
 - **Multi‑idioma del escaparate**, con dos niveles deliberadamente distintos:
   - **Idiomas de interfaz y contenido** (traducción humana o revisada, nunca automática): **italiano, inglés y alemán**. Rutas localizadas (`/it/...`, `/en/...`, `/de/...`), `hreflang`, y meta/Open Graph por idioma. El italiano es el idioma por defecto.
-  - **Idiomas de mensajería** (traducción automática, ver sección 5): además de los anteriores, **esloveno, checo y búlgaro**.
+  - **Idiomas de mensajería** (traducción automática, ver sección 5): además de los anteriores, **polaco, checo, eslovaco y húngaro** (lista provisional, pendiente de cerrar). Debe poder añadirse un idioma nuevo insertando una fila en la base de datos, sin tocar código.
   - El **español no es prioritario**: puede añadirse más adelante como cuarto idioma de interfaz, pero no condiciona el diseño ni el orden de trabajo.
   - Detecta el idioma por `Accept-Language` y sugiere el cambio con un aviso descartable; **nunca redirijas por geolocalización** sin permitir volver, y recuerda la elección en cookie.
 
@@ -120,12 +120,12 @@ Es la pieza diferencial. Especificación:
 
 - **Hilo de conversación por reserva o consulta**, accesible por el huésped mediante enlace mágico (sin obligarle a crear cuenta y contraseña) y por el propietario desde el panel.
 - Cada mensaje almacena: **texto original**, **idioma detectado del original**, y **N traducciones** en una tabla hija (`message_translations`: `message_id`, `lang`, `text`, `engine`, `created_at`). El original nunca se sobrescribe.
-- **Idiomas de huésped soportados, por volumen real de clientes**: italiano, alemán, esloveno, checo, búlgaro, e inglés como comodín para el resto. Ese orden importa: es el de prioridad para pruebas, plantillas y revisión de calidad.
+- **Idiomas de huésped soportados, por volumen real de clientes**: italiano, alemán, polaco, checo, eslovaco y húngaro, más inglés como comodín para el resto. La lista es provisional: trátala como datos, no como código.
 - **Flujo huésped → propietario**: el huésped escribe en su lengua materna. El sistema detecta el idioma y genera traducciones al **italiano** (idioma del propietario) y al **inglés** (para verificación y para cualquier gestor que no hable italiano). El propietario ve el italiano por defecto, con enlace a "ver original".
 - **Flujo propietario → huésped**: el propietario escribe en italiano. El sistema traduce automáticamente a la **lengua materna del huésped** (la detectada en su primer mensaje, o la del navegador/perfil) y también al inglés. El huésped ve su idioma con opción de ver el original y el inglés.
-- **Alfabeto cirílico**: el búlgaro exige revisar tipografía (fuente con cobertura cirílica completa), longitud de texto en la interfaz y ordenación/búsqueda. Pruébalo explícitamente, no lo asumas.
+- **Alfabetos**: todos los idiomas previstos son latinos, pero con diacríticos poco frecuentes (ą ć ę ł ń ś ź ż en polaco, č ř ž ů en checo, ő ű en húngaro). Aun así, elige una tipografía con **cobertura latina extendida y cirílica**: no cuesta nada ahora y evita rehacer el diseño si más adelante entra un idioma que la necesite.
 - **Indicador visible de "traducido automáticamente"** en todo mensaje traducido, con el original a un clic. Es un requisito de confianza, no un adorno.
-- **Motor de traducción**: capa de abstracción `TranslationProvider` con implementaciones intercambiables. **DeepL como principal** — cubre italiano, alemán, esloveno, checo y búlgaro, y su calidad en alemán y checo es claramente superior a la de Google. Respaldo con un LLM (Claude) o Google Translate. Si el proveedor falla, el mensaje se entrega igualmente con el original y la traducción se reintenta en segundo plano — **nunca bloquees la entrega de un mensaje por un fallo de traducción**.
+- **Motor de traducción**: capa de abstracción `TranslationProvider` con implementaciones intercambiables. **DeepL como principal** — cubre italiano, alemán, polaco, checo, eslovaco y húngaro, y su calidad en alemán y checo es claramente superior a la de Google. El húngaro es el más difícil de los seis para cualquier traductor automático: pide revisión nativa antes de fiarte. Respaldo con un LLM (Claude) o Google Translate. Si el proveedor falla, el mensaje se entrega igualmente con el original y la traducción se reintenta en segundo plano — **nunca bloquees la entrega de un mensaje por un fallo de traducción**.
 - **Caché de traducciones** por hash del texto + par de idiomas, para no pagar dos veces lo mismo (las plantillas y respuestas frecuentes se repiten mucho).
 - **Respuestas rápidas** (plantillas) pre‑traducidas a los idiomas soportados: check‑in, wifi, parking, mascotas, salida tardía.
 - **Notificaciones**: email al propietario con el mensaje ya traducido a su idioma, y email al huésped en el suyo, ambos con enlace directo al hilo.
@@ -271,8 +271,8 @@ Reglas de mantenibilidad que debes respetar al escribir el código:
 - El precio mostrado en la ficha coincide **exactamente** con el importe cobrado por Stripe, hasta el céntimo.
 - Un webhook de Stripe reenviado tres veces produce **un solo** cambio de estado y **un solo** email.
 - Un *hold* no pagado libera las fechas automáticamente a los 15 minutos.
-- Un mensaje escrito en búlgaro llega al propietario en italiano y en inglés, con el original accesible, y la respuesta que el propietario escribe en italiano llega al huésped en búlgaro. Repite la prueba con esloveno, checo y alemán.
-- El texto en cirílico se renderiza correctamente y no desborda ningún componente de la interfaz.
+- Un mensaje escrito en polaco llega al propietario en italiano y en inglés, con el original accesible, y la respuesta que el propietario escribe en italiano llega al huésped en polaco. Repite con checo, eslovaco, húngaro y alemán.
+- Los diacríticos del polaco, el checo y el húngaro se renderizan correctamente y no desbordan ningún componente de la interfaz.
 - Si DeepL devuelve error, el mensaje se entrega igualmente y la traducción aparece después sin intervención manual.
 - La ficha de piso pasa Lighthouse con ≥ 90 en rendimiento, accesibilidad y SEO en móvil.
 - Cambiar de idioma mantiene la página, las fechas seleccionadas y el estado del formulario.
@@ -281,7 +281,7 @@ Reglas de mantenibilidad que debes respetar al escribir el código:
 
 - **Ubicación**: Bibione (San Michele al Tagliamento, Véneto, Italia). Aplican CIN, Alloggiati Web e imposta di soggiorno municipal. España queda fuera de alcance.
 - **Propiedades**: 7 apartamentos de un propietario, más 4 posibles de un segundo. Modelo de datos multi‑propietario desde el día 0, interfaz de un solo propietario por ahora.
-- **Idiomas**: interfaz en italiano, inglés y alemán; mensajería con traducción automática además en esloveno, checo y búlgaro. Italiano por defecto. El español no es prioritario.
+- **Idiomas**: interfaz en italiano, inglés y alemán, con arquitectura preparada para un cuarto sin rehacer nada; mensajería con traducción automática además en polaco, checo, eslovaco y húngaro (provisional). Italiano por defecto. El español no es prioritario.
 - **Aprobación**: manual en todas las propiedades al arrancar, con interruptor por propiedad para pasar a instantánea.
 - **Airbnb**: se mantiene. La sincronización iCal es crítica desde la fase 2.
 - **Precios**: configurables por temporada desde el panel, con listino semanal sábado‑a‑sábado en temporada alta.
@@ -348,18 +348,18 @@ La razón para no dejarlo todo en WhatsApp es precisamente tu requisito de tradu
 
 ### 2.4 Idiomas y motor de traducción
 
-Tu mezcla real de clientes es **italiano > alemán > esloveno > checo > búlgaro**, y eso cambia el diseño: el español deja de ser prioritario y el alemán pasa a ser el segundo idioma de peso.
+Tu mezcla real de clientes es **italiano y alemán primero, y después checo, eslovaco, polaco, húngaro y esloveno**. Eso cambia el diseño: el español deja de ser prioritario y el alemán pasa a ser el segundo idioma de peso.
 
 **Separa dos cosas que suelen confundirse:**
 
-- **Idiomas del escaparate** (contenido comercial, traducido a mano): **italiano, inglés y alemán**. Solo tres. Añadir esloveno, checo y búlgaro al sitio web significa mantener seis versiones de cada descripción de piso cada vez que cambias una frase, y esos tres públicos navegan sin problema en inglés o alemán. No pagues ese coste.
-- **Idiomas de la mensajería** (traducción automática): **los seis**. Aquí sí, porque escribir a máquina en tu propio idioma sobre las llaves y el aparcamiento es donde el cliente agradece de verdad no tener que pelearse en inglés. Es tu diferencial y es barato de mantener.
+- **Idiomas del escaparate** (contenido comercial, traducido a mano): **italiano, inglés y alemán**. Solo tres. Añadir cada idioma más al sitio web significa mantener una versión más de cada descripción de piso cada vez que cambias una frase, y esos públicos navegan sin problema en inglés o alemán. No pagues ese coste.
+- **Idiomas de la mensajería** (traducción automática): **todos los de la lista**. Aquí sí, porque escribir a máquina en tu propio idioma sobre las llaves y el aparcamiento es donde el cliente agradece de verdad no tener que pelearse en inglés. Es tu diferencial y es barato de mantener.
 
-**DeepL sigue siendo la elección correcta**, y con tu mezcla lo es aún más: cubre esloveno, checo y búlgaro, y en alemán y checo su ventaja sobre Google es notable en texto conversacional. Miles de mensajes al mes te cuestan pocos euros.
+**DeepL sigue siendo la elección correcta**, y con tu mezcla lo es aún más: cubre polaco, checo, eslovaco, húngaro y esloveno, y en alemán y checo su ventaja sobre Google es notable en texto conversacional. Miles de mensajes al mes te cuestan pocos euros.
 
 Dos cosas que no debes saltarte con este mix:
 
-- El **búlgaro va en cirílico**. Elige una tipografía con cobertura cirílica completa y prueba que no rompe la interfaz: el texto cambia de longitud y hay componentes que se desbordan.
+- Los **diacríticos centroeuropeos** (polaco, checo, húngaro) rompen tipografías mal elegidas. Escoge una con cobertura latina extendida —y ya de paso cirílica, por si acaso— y compruébalo con texto real.
 - El **alemán es el idioma que más se alarga** al traducir (30–40 % más largo que el inglés). Si el diseño de los botones y las tarjetas aguanta el alemán, aguanta todo lo demás. Úsalo como caso de prueba del layout.
 
 Y sigue en pie lo de antes: declara la traducción en tu política de privacidad, porque estás enviando texto escrito por el huésped a un tercero.
@@ -431,16 +431,18 @@ Puntos abiertos que deben cerrarse **antes** de empezar a construir. Cada uno ll
 | # | Tema | Recomendación |
 |---|---|---|
 | 1 | **Idiomas de la web** (3 + un cuarto posible) | Italiano, inglés y alemán. El cuarto: polaco o checo, según volumen real. |
-| 2 | **Idiomas de la mensajería** | Inglés, alemán, polaco, checo, esloveno + italiano. Ampliable sin coste; decidir la lista definitiva puede esperar. |
+| 2 | **Idiomas de la mensajería** | Italiano, inglés, alemán, polaco, checo, eslovaco y húngaro. Todos latinos y cubiertos por DeepL. Ampliable con una fila en la base de datos; la lista definitiva puede esperar. |
 | 3 | **Política de cobro de la reserva** | Depósito 30 % + saldo 14 días antes. Cobro solo al aceptar la solicitud, no antes. |
-| 4 | **Fianza por daños** | No ponerla. Si se pone: tarjeta guardada en garantía, no retención ni cobro. |
+| 4 | **Fianza por daños** — cuatro opciones | **(a) Ninguna**, mi recomendación. **(b) Tarjeta guardada en garantía**: cómoda, pero el cliente puede disputar el cargo y en daños suele ganar. **(c) Metálico a la llegada**: la única sin riesgo de disputa, pero da trabajo y no deja rastro. **(d) Retención de tarjeta**: caduca a los 7 días, antes de acabar la semana. |
 | 5 | **Cuenta de cobro** | Stripe Connect con cargos directos: cada propietario cobra en su cuenta. |
 | 6 | **Primeras reservas (antes de la web)** | Email para lo formal, WhatsApp para lo rápido. Guardar todo en un sitio. |
 | 7 | **Canal de mensajería definitivo** | WhatsApp antes de reservar; chat web con traductor una vez confirmada. |
-| 8 | **¿Se reabre Airbnb en febrero?** | Decidirlo en enero con datos de la web. Mientras esté cerrado, no hay riesgo de doble reserva. |
+| 8 | **¿Se reabre Airbnb en febrero?** | Sí, pero **como canal residual**: la web es la fuente de verdad y en febrero se abre en Airbnb solo lo que siga libre. Nunca los dos canales vendiendo el mismo inventario a la vez. |
 | 9 | **Política de cancelación** | Una sola política, clara, igual para todos los apartamentos. |
 | 10 | **Estancia mínima y día de entrada por temporada** | Semana sábado‑sábado en julio y agosto; libre el resto. |
 | 11 | **Plazo de respuesta a las solicitudes** | Máximo 24 h, idealmente 12. Definir quién responde. |
 | 12 | **Listino de precios de la próxima temporada** | Necesario antes de abrir reservas. |
 | 13 | **Imposta di soggiorno** | ¿Se cobra online o en destino? |
 | 14 | **Datos de cada apartamento** | CIN, capacidad, dormitorios, fotos, descripción. |
+| 15 | **Si falla el cobro del saldo** | Reintento automático y enlace de pago por email o WhatsApp. Como último recurso, enlace de pago desde el móvil del cliente al llegar — antes que un TPV físico, que obliga al propietario a desplazarse. |
+| 16 | **Quién revisa el calendario antes de aceptar en Airbnb** | Procedimiento escrito y una sola persona responsable en temporada alta. |
