@@ -2,10 +2,11 @@
 
 Punti aperti da chiudere **prima** di iniziare a costruire il sito. Ogni voce porta la raccomandazione motivata.
 
-Documenti collegati: [analisi dei clienti](ANALISI-CLIENTI.md) · [prompt maestro](PROMPT-MAESTRO.md)
+Documenti collegati: [analisi dei clienti](ANALISI-CLIENTI.md) · [studio delle piattaforme esistenti](ESTUDIO-PLATAFORMAS.md) · [prompt maestro](PROMPT-MAESTRO.md)
 
 | # | Tema | Raccomandazione |
 |---|---|---|
+| 0 | **Comprare o costruire** — decisione prioritaria | Comprare ora due abbonamenti a un gestionale italiano (uno per proprietario, ~350–500 €/anno in tutto) per essere operativi prima di gennaio, e costruire in parallelo solo la vetrina. Il sito proprio completo si costruisce durante il 2027. Vedi lo [studio delle piattaforme](ESTUDIO-PLATAFORMAS.md). |
 | 1 | **Lingue del sito** | Italiano, inglese e tedesco. Il tedesco copre il 55 % delle prenotazioni reali: va trattato come lingua principale, non secondaria. Quarta lingua eventuale: **ceco**. |
 | 2 | **Lingue della messaggistica** | Italiano, inglese, tedesco, **ceco** (che copre anche gli slovacchi), ungherese e polacco. **Lo sloveno si può togliere**: è lo 0,9 % delle prenotazioni. Da valutare il rumeno, in crescita nel 2026. |
 | 3 | **Politica di incasso** | Acconto del 30 % + saldo 14 giorni prima dell'arrivo. Incasso **solo al momento dell'accettazione**, mai prima. |
